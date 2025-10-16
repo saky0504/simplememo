@@ -1,20 +1,4 @@
-@import "tailwindcss";
-
-/* Root variables */
-:root {
-  --background: #E5E5E5;
-  --foreground: #1a1a1a;
-}
-
-/* Dark mode variables (optional - 현재 미사용) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #ededed;
-  }
-}
-
-/* Base styles */
+/* 기본 스타일 */
 body {
   margin: 0;
   padding: 0;
@@ -23,42 +7,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #E5E5E5;
+  color: #1a1a1a;
 }
 
-/* Typography defaults */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  font-weight: 600;
-}
-
-p {
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* Custom scrollbar styling */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-/* Utility classes */
+/* 뉴모피즘 스타일 */
 .neumorphic {
   box-shadow: 6px 6px 12px rgba(13, 39, 80, 0.05), -4px -4px 8px rgba(255, 255, 255, 0.3);
 }
@@ -72,4 +25,25 @@ p {
   opacity: 0.3;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C0C0C0;
+  border-radius: 2.5px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 
+              inset 0 -1px 1px rgba(0, 0, 0, 0.15);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Resizable } from 're-resizable';
 import { X, Palette, Plus, Grid3x3, Layers, ChevronsRight } from 'lucide-react';
-import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
 interface StickyNoteProps {
@@ -13,6 +12,7 @@ interface StickyNoteProps {
   zIndex: number;
   availableColors: string[];
   isMobile?: boolean;
+  isLastNote?: boolean;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
@@ -35,6 +35,7 @@ export function StickyNote({
   zIndex,
   availableColors,
   isMobile = false,
+  isLastNote = false,
   onUpdate,
   onDelete,
   onPositionChange,
@@ -71,9 +72,22 @@ export function StickyNote({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
+        // 화면 경계 제한 계산
+        const newX = e.clientX - dragOffset.x;
+        const newY = e.clientY - dragOffset.y;
+        
+        // 화면 경계 내로 제한
+        const minX = 0;
+        const minY = 0;
+        const maxX = window.innerWidth - size.width;
+        const maxY = window.innerHeight - size.height;
+        
+        const constrainedX = Math.max(minX, Math.min(newX, maxX));
+        const constrainedY = Math.max(minY, Math.min(newY, maxY));
+        
         onPositionChange(id, {
-          x: e.clientX - dragOffset.x,
-          y: e.clientY - dragOffset.y,
+          x: constrainedX,
+          y: constrainedY,
         });
       }
     };
@@ -187,8 +201,14 @@ export function StickyNote({
               <Palette className="h-4 w-4" style={{ color: '#9CA3AF' }} />
             </button>
             <button
-              className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors border-none bg-transparent cursor-pointer"
+              className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors border-none bg-transparent"
               onClick={() => onDelete(id)}
+              disabled={isLastNote}
+              title={isLastNote ? "최소 1개의 메모는 유지되어야 합니다" : "메모 삭제"}
+              style={{
+                opacity: isLastNote ? 0.3 : 1,
+                cursor: isLastNote ? 'not-allowed' : 'pointer',
+              }}
             >
               <X className="h-4 w-4" style={{ color: '#9CA3AF' }} />
             </button>

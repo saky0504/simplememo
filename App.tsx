@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { StickyNote } from './components/StickyNote';
 import { HistoryViewer } from './components/HistoryViewer';
-import { Button } from './components/ui/button';
 import { useIsMobile } from './components/ui/use-mobile';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface Note {
   id: string;
@@ -218,7 +217,7 @@ function App() {
     const padding = 20;
     const noteWidth = 300;
     const noteHeight = 300;
-    const topOffset = 90; // Space for top toolbar (button height + spacing)
+    const topOffset = 70; // Space for top toolbar (moved up 20px from 90)
     
     // Mobile: single column with maximum width
     if (isMobile) {
@@ -269,7 +268,7 @@ function App() {
     const padding = 20;
     const noteWidth = 300;
     const noteHeight = 300;
-    const topOffset = 90;
+    const topOffset = 70;
     const maxX = window.innerWidth - noteWidth - padding;
     const maxY = window.innerHeight - noteHeight - padding;
     
@@ -305,7 +304,7 @@ function App() {
     const noteWidth = 300;
     const noteHeight = 300;
     const spacing = 40;
-    const topOffset = 90;
+    const topOffset = 70;
     const padding = 20;
     
     const maxX = window.innerWidth - noteWidth - padding;
