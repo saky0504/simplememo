@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { StickyNote } from './components/StickyNote';
 import { HistoryViewer } from './components/HistoryViewer';
+// import { Button } from './components/ui/button';
 import { useIsMobile } from './components/ui/use-mobile';
 import { toast } from 'sonner';
+
+// Toast 타입 확장
+declare module 'sonner' {
+  export interface Toast {
+    error: (message: string, options?: any) => void;
+  }
+}
 
 interface Note {
   id: string;
@@ -30,7 +38,7 @@ function App() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [clickCount, setClickCount] = useState(0);
-  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
+  const [clickTimer, setClickTimer] = useState<number | null>(null);
 
   // Load notes and history from localStorage
   useEffect(() => {
@@ -66,11 +74,20 @@ function App() {
     
     // Create initial note if no notes exist
     if (!initialNotesCreated) {
+      // 화면 중앙에 첫 메모 생성
+      const noteWidth = 300;
+      const noteHeight = 300;
+      const centerX = (window.innerWidth - noteWidth) / 2;
+      const centerY = (window.innerHeight - noteHeight) / 2;
+      
       const initialNote: Note = {
         id: `note-${Date.now()}`,
         content: '',
-        position: { x: 20, y: isMobile ? 20 : 90 },
-        size: { width: 300, height: 300 },
+        position: { 
+          x: Math.max(20, centerX), // 최소 20px 여백 보장
+          y: Math.max(20, centerY)  // 최소 20px 여백 보장
+        },
+        size: { width: noteWidth, height: noteHeight },
         color: COLORS[0],
         createdAt: Date.now(),
         zIndex: 1,
@@ -99,12 +116,13 @@ function App() {
     }
   }, [history]);
 
-  const addNote = () => {
-    const noteWidth = 300;
-    const noteHeight = 300;
-    const padding = 20;
-    const offsetStepX = 8;
-    const offsetStepY = 32;
+  const addNote = (sourceNoteId?: string) => {
+    // 모바일에서는 화면 크기에 맞게 메모 크기 조정
+    const noteWidth = isMobile ? Math.min(window.innerWidth - 40, 300) : 300;
+    const noteHeight = isMobile ? Math.min(window.innerHeight - 100, 400) : 300;
+    const padding = isMobile ? 10 : 20;
+    const offsetStepX = isMobile ? 4 : 8;
+    const offsetStepY = isMobile ? 16 : 32;
     
     // 툴바 공간을 고려한 영역 설정
     const topOffset = 90; // PC 모드 툴바 높이
@@ -119,7 +137,31 @@ function App() {
     let x: number;
     let y: number;
     
-    if (notes.length === 0) {
+    // 특정 메모에서 생성 요청이 온 경우
+    if (sourceNoteId) {
+      const sourceNote = notes.find(n => n.id === sourceNoteId);
+      if (sourceNote) {
+        // 해당 메모의 헤더 아래, x축으로 +20px에 배치
+        const headerHeight = 36; // 헤더 높이
+        x = sourceNote.position.x + 20;
+        y = sourceNote.position.y + headerHeight;
+        
+        // 오른쪽으로 벗어나면 원래 위치로
+        if (x + noteWidth > window.innerWidth - effectiveRight) {
+          x = sourceNote.position.x + offsetStepX;
+        }
+        
+        // 화면 아래로 벗어나면 위치 조정
+        if (y + noteHeight > window.innerHeight - effectiveBottom) {
+          y = sourceNote.position.y + offsetStepY;
+        }
+      } else {
+        // sourceNote를 찾지 못한 경우 기본 로직
+        const lastNote = notes[notes.length - 1];
+        x = lastNote.position.x + offsetStepX;
+        y = lastNote.position.y + offsetStepY;
+      }
+    } else if (notes.length === 0) {
       // 첫 번째 메모는 좌측 상단 초기 위치에 배치
       x = padding;
       y = effectiveTop;
@@ -217,7 +259,7 @@ function App() {
     const padding = 20;
     const noteWidth = 300;
     const noteHeight = 300;
-    const topOffset = 70; // Space for top toolbar (moved up 20px from 90)
+    const topOffset = 90; // Space for top toolbar (button height + spacing)
     
     // Mobile: single column with maximum width
     if (isMobile) {
@@ -268,7 +310,7 @@ function App() {
     const padding = 20;
     const noteWidth = 300;
     const noteHeight = 300;
-    const topOffset = 70;
+    const topOffset = 90;
     const maxX = window.innerWidth - noteWidth - padding;
     const maxY = window.innerHeight - noteHeight - padding;
     
@@ -304,7 +346,7 @@ function App() {
     const noteWidth = 300;
     const noteHeight = 300;
     const spacing = 40;
-    const topOffset = 70;
+    const topOffset = 90;
     const padding = 20;
     
     const maxX = window.innerWidth - noteWidth - padding;
@@ -335,21 +377,38 @@ function App() {
     setNotes(updatedNotes);
   };
 
-  const resizeAll = (size: 'small' | 'medium' | 'large') => {
-    const sizeMap = {
-      small: { width: 250, height: 250 },
-      medium: { width: 300, height: 300 },
-      large: { width: 400, height: 400 },
-    };
+  // const resizeAll = (size: 'small' | 'medium' | 'large') => {
+  //   const sizeMap = {
+  //     small: { width: 250, height: 250 },
+  //     medium: { width: 300, height: 300 },
+  //     large: { width: 400, height: 400 },
+  //   };
 
-    const updatedNotes = notes.map((note) => ({
-      ...note,
-      size: sizeMap[size],
-      zIndex: note.zIndex, // Preserve zIndex
-    }));
+  //   const updatedNotes = notes.map((note) => ({
+  //     ...note,
+  //     size: sizeMap[size],
+  //     zIndex: note.zIndex, // Preserve zIndex
+  //   }));
     
-    setNotes(updatedNotes);
-  };
+  //   setNotes(updatedNotes);
+  // };
+
+  // const centerAllNotes = () => {
+  //   const noteWidth = 300;
+  //   const noteHeight = 300;
+  //   const centerX = (window.innerWidth - noteWidth) / 2;
+  //   const centerY = (window.innerHeight - noteHeight) / 2;
+    
+  //   const updatedNotes = notes.map((note, index) => ({
+  //     ...note,
+  //     position: {
+  //       x: Math.max(20, centerX + (index * 20)), // 중앙에서 약간씩 오프셋
+  //       y: Math.max(20, centerY + (index * 20))
+  //     }
+  //   }));
+    
+  //   setNotes(updatedNotes);
+  // };
 
   const handleDoubleClick = () => {
     setClickCount((prev) => prev + 1);
@@ -360,7 +419,7 @@ function App() {
 
     const timer = setTimeout(() => {
       setClickCount(0);
-    }, 2000);
+    }, 2000) as unknown as number;
 
     setClickTimer(timer);
 
